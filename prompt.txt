@@ -1,0 +1,147 @@
+Note - I used this one prompt to brainstorm optimal structure for my dataset, Note that I just used this for understanding different ways of reaching to a solution and did not implement it fully in my code, I took the AI's suggestion following to this prompt and then carried on with my work with a new perspective and insight.
+
+Prompt - 
+Read my entire @discover.ipynb 
+You will find all the operations I did for merging different datasets.
+
+To give you a glimpse of my final merged dataset:
+game_data.head()
+	name	id	genres	platforms	first_release_date	rating	review_score	review_count	people_polled	main	...	Platform	Genre	Publisher	NA_Sales	EU_Sales	JP_Sales	Other_Sales	Global_Sales	match_type	genres_decoded
+0	Tony Hawk's Pro Skater 2	259743	[14, 33]	[4]	1002844800	Missing	85.0	271.0	132.0	9.48	...	PS	Sports	Activision	3.05	1.41	0.02	0.20	4.68	exact	Sport, Arcade
+1	Tony Hawk's Pro Skater 2	259743	[14, 33]	[4]	1002844800	Missing	85.0	271.0	132.0	9.48	...	GBA	Sports	Activision	0.85	0.31	0.00	0.02	1.18	exact	Sport, Arcade
+2	Tony Hawk's Pro Skater 2	259743	[14, 33]	[4]	1002844800	Missing	85.0	271.0	132.0	9.48	...	N64	Sports	Activision	0.59	0.16	0.00	0.01	0.76	exact	Sport, Arcade
+3	The Powerpuff Girls: Chemical X-Traction	19421	[4, 8]	[4, 7]	1002153600	Missing	38.0	4.0	2.0	0.92	...	PS	Action	BAM! Entertainment	0.14	0.10	0.00	0.02	0.25	exact	Fighting, Platform
+4	The Powerpuff Girls: Chemical X-Traction	19421	[4, 8]	[4, 7]	1002153600	Missing	38.0	4.0	2.0	0.92	...	N64	Action	BAM! Entertainment	0.13	0.03	0.00	0.00	0.16	exact	Fighting, Platform
+5 rows × 23 columns
+
+game_data.isna().sum()
+name                     0
+id                       0
+genres                   0
+platforms                0
+first_release_date       0
+rating                 111
+review_score          2668
+review_count          2668
+people_polled         2668
+main                  2668
+extra                 2668
+completionist         2668
+Year                   221
+Platform                 0
+Genre                    0
+Publisher               27
+NA_Sales                 0
+EU_Sales                 0
+JP_Sales                 0
+Other_Sales              0
+Global_Sales             0
+match_type               0
+genres_decoded           0
+dtype: int64
+
+game_data.shape
+(13381, 23)
+
+game_data[['rating','review_score','review_count','people_polled','main','extra','completionist','Year','Publisher']]
+	rating	review_score	review_count	people_polled	main	extra	completionist	Year	Publisher
+0	Missing	85.0	271.0	132.0	9.48	13.34	61.48	2000.0	Activision
+1	Missing	85.0	271.0	132.0	9.48	13.34	61.48	2001.0	Activision
+2	Missing	85.0	271.0	132.0	9.48	13.34	61.48	2001.0	Activision
+3	Missing	38.0	4.0	2.0	0.92	0.00	0.00	2001.0	BAM! Entertainment
+4	Missing	38.0	4.0	2.0	0.92	0.00	0.00	2001.0	BAM! Entertainment
+...	...	...	...	...	...	...	...	...	...
+13376	Missing	68.0	12.0	7.0	7.24	0.00	8.33	2004.0	Microsoft Game Studios
+13377	80.0	NaN	NaN	NaN	NaN	NaN	NaN	2010.0	Microsoft Game Studios
+13378	Missing	NaN	NaN	NaN	NaN	NaN	NaN	2001.0	LucasArts
+13379	80.0	57.0	3.0	0.0	0.00	0.00	0.00	2014.0	Microsoft Game Studios
+13380	Missing	NaN	NaN	NaN	NaN	NaN	NaN	2006.0	Microsoft Game Studios
+13381 rows × 9 columns
+
+game_data[game_data['rating']=='Missing'].shape
+(6128, 23)
+
+game_data.info()
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 13381 entries, 0 to 13380
+Data columns (total 23 columns):
+ #   Column              Non-Null Count  Dtype  
+---  ------              --------------  -----  
+ 0   name                13381 non-null  object 
+ 1   id                  13381 non-null  int64  
+ 2   genres              13381 non-null  object 
+ 3   platforms           13381 non-null  object 
+ 4   first_release_date  13381 non-null  int64  
+ 5   rating              13270 non-null  object 
+ 6   review_score        10713 non-null  float64
+ 7   review_count        10713 non-null  float64
+ 8   people_polled       10713 non-null  float64
+ 9   main                10713 non-null  float64
+ 10  extra               10713 non-null  float64
+ 11  completionist       10713 non-null  float64
+ 12  Year                13160 non-null  float64
+ 13  Platform            13381 non-null  object 
+ 14  Genre               13381 non-null  object 
+ 15  Publisher           13354 non-null  object 
+ 16  NA_Sales            13381 non-null  float64
+ 17  EU_Sales            13381 non-null  float64
+ 18  JP_Sales            13381 non-null  float64
+ 19  Other_Sales         13381 non-null  float64
+ 20  Global_Sales        13381 non-null  float64
+ 21  match_type          13381 non-null  object 
+ 22  genres_decoded      13381 non-null  object 
+dtypes: float64(12), int64(2), object(9)
+memory usage: 2.3+ MB
+
+
+game_data['id'].nunique()
+8470
+
+game_data['name'].nunique()
+8470
+
+game_data['Genre'].nunique()
+12
+
+game_data['Platform'].nunique()
+29
+
+From all this, what I could observe is:
+1. Even though the missing values for rating shows us only 111, there are a lot of values named "Missing" in that column, which means that the rows are technically not empty or missing but they actually are "Missing" so the missing values number becomes 111+6128 = 6239
+
+2. If we actually look at the unique values of each column, :
+@discover.ipynb (1-2) 
+ name 8470
+id 8470
+genres 620
+platforms 1038
+first_release_date 3731
+rating 3130
+review_score 81
+review_count 711
+people_polled 710
+main 2244
+extra 2408
+completionist 2661
+Year 39
+Platform 29
+Genre 12
+Publisher 479
+NA_Sales 388
+EU_Sales 285
+JP_Sales 203
+Other_Sales 149
+Global_Sales 585
+match_type 2
+genres_decoded 620
+
+We can see that even though the total number of rows is 13381, there are not much unique values for each column.
+This means that we have spread the data vertically instead of horizontally. If we plan to group the data by the game name and adjust everything based on the name and make new columns if necessary, we can have total of 8470 rows somehow. For example, the "Genre" column has total of 12 unique values, we can create 12 columns for different Genre, "Platform" has 29 unique values, we can create 29 more columns....
+
+You can read the whole notebook to understand my decision choices, particularly the way I merged the data, I might be inefficient in merging the data, you can suggest me the right way to merge the data or you can suggest me further operations on the final csv to make it our desired dataset.
+
+The "genres" and "platforms" columns consists of list objects that previously linked to respective genres.csv and platforms.csv based on the game ids which I later merged into the dataset so now we have a vertically flat data meaning if one game has 3 genres, that game will have 3 rows... and stuff, It is confusing to explain so I will not explain my data merging process you have to figure it our on your own by reading my notebook.
+another important information I would like to tell you is -
+"genres" and "platforms" columns in our original merged data are useless because they are just list objects from which we have already extracted information and made new columns named "Genre" and "Platform". Also, the "match_type" and "genres_decoded" columns are also completely useless as they just contain the information of fuzzy matching and the transformed "genres" list objects columns, which is not needed practically.
+
+Give me the best solution to format and handle my data very efficiently.
