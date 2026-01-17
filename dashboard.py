@@ -216,8 +216,7 @@ def update_scatter_plots(cluster_filter, sales_range):
         color_discrete_map=cluster_colors,
         hover_data={'name': True, 'rating': ':.0f'},
         labels={'review_score': 'Review Score', 'Total_Global_Sales': 'Global Sales (Millions)'},
-        title=f'Review Score vs Global Sales - Showing {len(filtered_data)} games',
-        trendline='ols'
+        title=f'Review Score vs Global Sales - Showing {len(filtered_data)} games'
     )
     fig2.update_traces(marker=dict(size=10, opacity=0.7, line=dict(width=1, color='black')))
     fig2.update_layout(
