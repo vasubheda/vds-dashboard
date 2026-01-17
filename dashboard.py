@@ -76,6 +76,7 @@ yearly_genre_sales = genre_evolution.groupby(['Year', 'Genre'])['Total_Global_Sa
 
 # Initialize Dash app
 app = dash.Dash(__name__)
+server = app.server  # Expose the server for deployment
 
 # Define colors
 cluster_colors = {
